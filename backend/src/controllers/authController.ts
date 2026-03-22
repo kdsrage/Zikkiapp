@@ -3,19 +3,19 @@ import { z } from 'zod';
 import * as authService from '../services/authService';
 
 const registerSchema = z.object({
-  email: z.string().email('Ungültige E-Mail-Adresse'),
+  username: z.string().min(3, 'Benutzername muss mindestens 3 Zeichen haben').max(30).regex(/^[a-zA-Z0-9_]+$/, 'Nur Buchstaben, Zahlen und _ erlaubt'),
   password: z.string().min(6, 'Passwort muss mindestens 6 Zeichen haben'),
 });
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1),
   password: z.string().min(1),
 });
 
 export async function register(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { email, password } = registerSchema.parse(req.body);
-    const result = await authService.register(email, password);
+    const { username, password } = registerSchema.parse(req.body);
+    const result = await authService.register(username, password);
     res.status(201).json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -28,12 +28,12 @@ export async function register(req: Request, res: Response, next: NextFunction):
 
 export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { email, password } = loginSchema.parse(req.body);
-    const result = await authService.login(email, password);
+    const { username, password } = loginSchema.parse(req.body);
+    const result = await authService.login(username, password);
     res.json(result);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(400).json({ error: 'E-Mail und Passwort erforderlich' });
+      res.status(400).json({ error: 'Benutzername und Passwort erforderlich' });
       return;
     }
     next(error);
