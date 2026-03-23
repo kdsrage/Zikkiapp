@@ -6,10 +6,21 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE IF NOT EXISTS users (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email         TEXT UNIQUE NOT NULL,
+  username      TEXT UNIQUE,
   password_hash TEXT NOT NULL,
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   last_active   TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add username column if missing (idempotent migration)
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name='users' AND column_name='username'
+  ) THEN
+    ALTER TABLE users ADD COLUMN username TEXT UNIQUE;
+  END IF;
+END $$;
 
 -- User profiles (onboarding data + goals)
 CREATE TABLE IF NOT EXISTS user_profiles (
