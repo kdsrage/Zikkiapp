@@ -30,4 +30,20 @@ export async function testConnection(): Promise<void> {
   }
 }
 
+export async function runMigrations(): Promise<void> {
+  const fs = await import('fs');
+  const path = await import('path');
+  const client = await pool.connect();
+  try {
+    const sql = fs.readFileSync(path.join(__dirname, 'migrations.sql'), 'utf-8');
+    await client.query(sql);
+    console.log('✅ Migrations applied');
+  } catch (err) {
+    console.error('❌ Migration error:', err);
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
 export default pool;

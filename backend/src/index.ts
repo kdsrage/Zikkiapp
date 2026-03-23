@@ -2,12 +2,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import app from './app';
-import { testConnection } from './config/db';
+import { testConnection, runMigrations } from './config/db';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
 
 async function start(): Promise<void> {
   await testConnection();
+  await runMigrations();
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Zikki API running on http://localhost:${PORT}`);
