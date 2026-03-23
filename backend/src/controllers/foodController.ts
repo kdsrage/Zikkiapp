@@ -28,6 +28,22 @@ export async function getFoodByBarcode(req: Request, res: Response, next: NextFu
 
 export async function createFood(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
+    const { name, calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g } = req.body;
+
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      res.status(400).json({ error: 'Name ist erforderlich (min. 2 Zeichen)' });
+      return;
+    }
+
+    const numericFields = { calories_per_100g, protein_per_100g, carbs_per_100g, fat_per_100g };
+    for (const [field, value] of Object.entries(numericFields)) {
+      const num = Number(value);
+      if (isNaN(num) || num < 0 || num > 10000) {
+        res.status(400).json({ error: `Ungültiger Wert für ${field}` });
+        return;
+      }
+    }
+
     const food = await foodService.createFood(req.body, req.user?.userId);
     res.status(201).json(food);
   } catch (error) {

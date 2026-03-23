@@ -9,7 +9,7 @@ const PORT = parseInt(process.env.PORT ?? '3000', 10);
 async function start(): Promise<void> {
   await testConnection();
 
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Zikki API running on http://localhost:${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
   });

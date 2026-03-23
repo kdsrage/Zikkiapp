@@ -21,15 +21,21 @@ export async function updateProfile(req: Request, res: Response, next: NextFunct
 
 export async function calculateTargets(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { gender, weight_kg, height_cm, birth_year, activity_level, goal, weekly_change_kg } = req.body;
+    const { gender, activity_level, goal } = req.body;
+    const weight_kg = Number(req.body.weight_kg);
+    const height_cm = Number(req.body.height_cm);
+    const birth_year = Number(req.body.birth_year);
+    const weekly_change_kg = req.body.weekly_change_kg != null ? Number(req.body.weekly_change_kg) : 0.5;
 
-    if (!gender || !weight_kg || !height_cm || !birth_year || !activity_level || !goal) {
+    if (!gender || !activity_level || !goal ||
+        !weight_kg || !height_cm || !birth_year ||
+        isNaN(weight_kg) || isNaN(height_cm) || isNaN(birth_year)) {
       res.status(400).json({ error: 'Alle Körperdaten erforderlich' });
       return;
     }
 
     const tdee = onboardingService.calculateTDEE(gender, weight_kg, height_cm, birth_year, activity_level);
-    const macros = onboardingService.calculateMacros(tdee, goal, weight_kg, weekly_change_kg ?? 0.5);
+    const macros = onboardingService.calculateMacros(tdee, goal, weight_kg, weekly_change_kg);
 
     res.json(macros);
   } catch (error) {

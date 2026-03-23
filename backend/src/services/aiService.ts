@@ -111,7 +111,7 @@ function localFallbackParse(input: string): ParsedMealItem[] {
 }
 
 export async function parseMeal(rawInput: string): Promise<ParsedMealItem[]> {
-  const cacheKey = rawInput.toLowerCase().trim();
+  const cacheKey = rawInput.toLowerCase().trim().replace(/\s+/g, ' ');
   const cached = mealParseCache.get(cacheKey);
   if (cached) return cached;
 
