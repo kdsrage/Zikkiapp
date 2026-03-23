@@ -35,8 +35,17 @@ export async function runMigrations(): Promise<void> {
   const path = await import('path');
   const client = await pool.connect();
   try {
+    // pg_trgm requires superuser on some hosts — try, but don't crash if denied
+    try {
+      await client.query('CREATE EXTENSION IF NOT EXISTS pg_trgm');
+    } catch {
+      console.warn('⚠️  pg_trgm extension not available — fuzzy search disabled');
+    }
+
     const sql = fs.readFileSync(path.join(__dirname, 'migrations.sql'), 'utf-8');
-    await client.query(sql);
+    // Skip the extension line since we already handled it above
+    const sqlWithoutExtension = sql.replace(/CREATE EXTENSION IF NOT EXISTS pg_trgm;?/gi, '');
+    await client.query(sqlWithoutExtension);
     console.log('✅ Migrations applied');
   } catch (err) {
     console.error('❌ Migration error:', err);
